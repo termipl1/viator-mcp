@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
 
+// ─── VERSION ─────────────────────────────────────────────────────────────────
+const VERSION = "3.1.0";
+// ─────────────────────────────────────────────────────────────────────────────
+
 const VIATOR_API_KEY = process.env.VIATOR_API_KEY || "";
 const VIATOR_BASE_URL = process.env.VIATOR_BASE_URL || "https://api.viator.com/partner";
 const PORT = parseInt(process.env.PORT || "3000");
@@ -86,7 +90,6 @@ const TOOLS = [
 async function handleTool(name: string, args: Record<string, unknown>) {
   switch (name) {
     case "search_products": {
-      // FIX: searchType (singular, top-level), pagination at top level
       const body = {
         searchTerm: args.searchTerm,
         searchType: "PRODUCTS",
@@ -119,9 +122,13 @@ async function handleTool(name: string, args: Record<string, unknown>) {
   }
 }
 
-// Health check
+// Health check — wersja widoczna na /health
 app.get("/health", (_, res) => {
-  res.json({ status: "ok", hasApiKey: !!VIATOR_API_KEY, version: "3.0-searchfix" });
+  res.json({
+    status: "ok",
+    version: VERSION,
+    hasApiKey: !!VIATOR_API_KEY
+  });
 });
 
 // MCP SSE endpoint
@@ -134,7 +141,7 @@ app.get("/mcp", (req, res) => {
   const serverInfo = {
     jsonrpc: "2.0",
     method: "notifications/initialized",
-    params: { serverInfo: { name: "viator-mcp-server", version: "1.0.0" } }
+    params: { serverInfo: { name: "viator-mcp-server", version: VERSION } }
   };
   res.write(`data: ${JSON.stringify(serverInfo)}\n\n`);
 
@@ -159,7 +166,7 @@ app.post("/mcp", async (req, res) => {
       case "initialize":
         result = {
           protocolVersion: "2024-11-05",
-          serverInfo: { name: "viator-mcp-server", version: "1.0.0" },
+          serverInfo: { name: "viator-mcp-server", version: VERSION },
           capabilities: { tools: {} }
         };
         break;
@@ -190,5 +197,5 @@ app.post("/mcp", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Viator MCP Server on port ${PORT}`);
+  console.log(`Viator MCP Server v${VERSION} on port ${PORT}`);
 });
