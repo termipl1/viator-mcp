@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const VERSION = "3.2.0-debug";
+const VERSION = "3.3.0";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const VIATOR_API_KEY = process.env.VIATOR_API_KEY || "";
@@ -99,7 +99,7 @@ async function handleTool(name: string, args: Record<string, unknown>) {
       const body = {
         searchTerm: args.searchTerm,
         searchType: "PRODUCTS",
-        currencyCode: args.currency || "USD",
+        currency: args.currency || "USD",
         sortOrder: "DEFAULT",
         pagination: { offset: 0, count: Math.min(Number(args.count) || 10, 50) }
       };
