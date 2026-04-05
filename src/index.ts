@@ -86,11 +86,19 @@ const TOOLS = [
 async function handleTool(name: string, args: Record<string, unknown>) {
   switch (name) {
     case "search_products": {
-      // FIX: currencyCode (not currency), offset (not start)
+      // FIX: searchTypes array is required by Viator API v2
+      // FIX: currencyCode (not currency), pagination inside searchTypes
+      const count = Math.min(Number(args.count) || 10, 50);
       const body = {
         searchTerm: args.searchTerm,
+        searchTypes: [
+          {
+            searchType: "PRODUCTS",
+            pagination: { offset: 0, count }
+          }
+        ],
         currencyCode: args.currency || "USD",
-        pagination: { offset: 0, count: Math.min(Number(args.count) || 10, 50) }
+        sortOrder: "DEFAULT"
       };
       return await viatorRequest("/search/freetext", "POST", body);
     }
