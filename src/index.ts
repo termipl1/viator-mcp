@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const VERSION = "3.1.0";
+const VERSION = "3.2.0-debug";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const VIATOR_API_KEY = process.env.VIATOR_API_KEY || "";
@@ -13,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Viator API helper
+// Viator API helper — teraz zwraca pełny błąd z body
 async function viatorRequest(endpoint: string, method = "GET", body?: object, language = "en") {
   const url = `${VIATOR_BASE_URL}${endpoint}`;
   const headers: Record<string, string> = {
@@ -26,7 +26,13 @@ async function viatorRequest(endpoint: string, method = "GET", body?: object, la
   if (body) options.body = JSON.stringify(body);
 
   const response = await fetch(url, options);
-  if (!response.ok) throw new Error(`Viator API error ${response.status}`);
+
+  if (!response.ok) {
+    // Pobierz pełne body błędu zamiast tylko status code
+    const errorBody = await response.text();
+    throw new Error(`Viator API error ${response.status}: ${errorBody}`);
+  }
+
   return response.json();
 }
 
@@ -122,7 +128,7 @@ async function handleTool(name: string, args: Record<string, unknown>) {
   }
 }
 
-// Health check — wersja widoczna na /health
+// Health check
 app.get("/health", (_, res) => {
   res.json({
     status: "ok",
@@ -188,6 +194,7 @@ app.post("/mcp", async (req, res) => {
 
     res.json({ jsonrpc: "2.0", id, result });
   } catch (error) {
+    // Zwróć pełny błąd (z body Viator API) do Claude
     res.json({
       jsonrpc: "2.0",
       id,
