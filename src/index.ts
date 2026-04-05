@@ -88,9 +88,8 @@ async function handleTool(name: string, args: Record<string, unknown>) {
     case "search_products": {
       const body = {
         searchTerm: args.searchTerm,
-        searchTypes: ["PRODUCTS"],
         currency: args.currency || "USD",
-        pagination: { offset: 0, limit: Math.min(Number(args.count) || 10, 50) }
+        pagination: { start: 1, count: Math.min(Number(args.count) || 10, 50) }
       };
       return await viatorRequest("/search/freetext", "POST", body);
     }
